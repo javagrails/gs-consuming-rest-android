@@ -1,6 +1,6 @@
 package org.hello;
 
-import org.hello.Page;
+import org.hello.Greeting;
 import org.hello.R;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -23,19 +23,13 @@ public class HelloActivity extends Activity {
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-        Page page = restTemplate.getForObject("http://graph.facebook.com/gopivotal", Page.class);
+        Greeting greeting = restTemplate.getForObject("http://rest-service.guides.spring.io/greeting", Greeting.class);
 
-        TextView textView = (TextView) this.findViewById(R.id.name);
-        textView.setText(page.getName());
+        TextView textView = (TextView) this.findViewById(R.id.greeting_id);
+        textView.setText(greeting.getId());
 
-        textView = (TextView) this.findViewById(R.id.about);
-        textView.setText(page.getAbout());
-
-        textView = (TextView) this.findViewById(R.id.phone);
-        textView.setText(page.getPhone());
-
-        textView = (TextView) this.findViewById(R.id.website);
-        textView.setText(page.getWebsite());
+        textView = (TextView) this.findViewById(R.id.greeting_content);
+        textView.setText(greeting.getContent());
     }
 
 }
