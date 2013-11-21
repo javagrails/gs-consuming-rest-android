@@ -14,6 +14,13 @@ if [ $ret -ne 0 ]; then
 fi
 rm -rf target
 
+./gradlew clean build
+ret=$?
+if [ $ret -ne 0 ]; then
+  exit $ret
+fi
+rm -rf build
+
 cd ../initial
 mvn clean package
 ret=$?
@@ -21,5 +28,12 @@ if [ $ret -ne 0 ]; then
   exit $ret
 fi
 rm -rf target
+
+./gradlew clean build
+ret=$?
+if [ $ret -ne 0 ]; then
+  exit $ret
+fi
+rm -rf build
 
 exit $ret
