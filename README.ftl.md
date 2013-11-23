@@ -1,121 +1,150 @@
 <#assign project_id="gs-consuming-rest-android">
-This Getting Started guide walks you through the process of building an application that uses Spring for Android's `RestTemplate` to consume a REST service.
+This Getting Started guide walks you through the process of building an application that uses Spring for Android's `RestTemplate` to consume a Spring MVC-based [RESTful web service][u-rest].
 
-What you'll build
------------------
+What you will build
+-------------------
 
-You'll fetch some publicly visible Facebook data using their REST API from Android.
+You will build an Android client that consumes a Spring-based RESTful web service. Specifically, the client will consume the service created in [Building a RESTful Web Servce][gs-rest-service].
 
-What you'll need
-----------------
+The Android client will be accessed through an Android emulator, and will consume the service accepting requests at:
+
+    http://rest-service.guides.spring.io/greeting
+
+The service will respond with a [JSON][u-json] representation of a greeting:
+
+```json
+{"id":1,"content":"Hello, World!"}
+```
+
+The Android client will render the ID and content into a view.
+
+
+What you will need
+------------------
 
  - About 15 minutes
- - <@prereq_editor_android_buildtools/>
+ - [Android Studio]
+ - An internet connection
 
 
-## <@how_to_complete_this_guide jump_ahead='Fetch a REST resource'/>
-
-
-<a name="scratch"></a>
 Set up the project
 ------------------
 
-<@android_build_system_intro/>
+Within Android Studio, create a new project. Use "Rest" for the application and module names, and modify the package name to be "org.hello.rest". Enter the location of your choosing for the project and leave all the other options with their default settings.
 
-<@create_directory_structure_org_hello/>
+![Create new Project](images/create-project1.png)
 
-### Create a Maven POM
+The next screen presents some options for configuring the app icons. Continue with the default options.
 
-    <@snippet path="pom.xml" prefix="initial"/>
-    
-<@create_android_manifest/>
+![Create new Project](images/create-project2.png)
 
-    <@snippet path="AndroidManifest.xml" prefix="initial"/>
+The next screen presents an option to select the type of activity to use. Select "Blank Activity" and continue.
+
+![Create new Project](images/create-project3.png)
+
+The last screen presents some fields for setting the activity, layout, and fragment names. Again, continue with the default options to finish the project setup.
+
+![Create new Project](images/create-project4.png)
+
+When the project is created, you will see that several files are added. To complete this guide, you will edit the following:
+
+ - `Rest/src/main/AndroidManifest.xml`
+ - `Rest/src/main/res/values/strings.xml`
+ - `Rest/src/main/res/layout/fragment_main.xml`
+ - `Rest/src/main/res/menu/main.xml`
+ - `Rest/build.gradle`
+ - `Rest/src/main/java/org/hello/rest/MainActivity.java`
+
+![View the Android project contents](images/project-contents.png)
 
 
-### Create a string resource
-Add a text string. Text strings can be referenced from the application or from other resource files.
+Create an Android Manifest
+--------------------------
 
-    <@snippet path="res/values/strings.xml" prefix="initial"/>
+The [Android Manifest] contains all the information required to run an Android application, and it cannot build without one. The manifest also contains any permissions for which the app is requesting of the Android operating system. In this case, the app needs to access the internet to make an HTTP request. Add the following permission so the application can access resources over the internet.
 
-### Create a layout
-Here you define the visual structure for the user interface of your application.
-
-    <@snippet path="res/layout/hello_layout.xml" prefix="initial"/>
-
-
-<a name="initial"></a>
-Fetch a REST resource
-------------------------
-Before you create the REST request, consider the data that you want your application to consume. Suppose that you want to find out what Facebook knows about Pivotal. Knowing that Pivotal has a page on Facebook and that the ID is "gopivotal", query Facebook's Graph API via this URL:
-
-    http://graph.facebook.com/gopivotal
-
-If you request that URL through your web browser or curl, you'll receive a JSON document that looks something like this:
-
-```javascript
-{
-   "id": "161112704050757",
-   "about": "At Pivotal, our mission is to enable customers to build a new class of applications, leveraging big and fast data, and do all of this with the power of cloud independence. ",
-   "app_id": "0",
-   "can_post": false,
-   "category": "Internet/software",
-   "checkins": 0,
-   "cover": {
-      "cover_id": 163344023827625,
-      "source": "http://sphotos-d.ak.fbcdn.net/hphotos-ak-frc1/s720x720/554668_163344023827625_839302172_n.png",
-      "offset_y": 0,
-      "offset_x": 0
-   },
-   "founded": "2013",
-   "has_added_app": false,
-   "is_community_page": false,
-   "is_published": true,
-   "likes": 126,
-   "link": "https://www.facebook.com/gopivotal",
-   "location": {
-      "street": "1900 South Norfolk St.",
-      "city": "San Mateo",
-      "state": "CA",
-      "country": "United States",
-      "zip": "94403",
-      "latitude": 37.552261,
-      "longitude": -122.292152
-   },
-   "name": "Pivotal",
-   "phone": "650-286-8012",
-   "talking_about_count": 15,
-   "username": "gopivotal",
-   "website": "http://www.gopivotal.com",
-   "were_here_count": 0
-}
+```XML
+<uses-permission android:name="android.permission.INTERNET" />
 ```
 
-As you can see, Facebook returns quite a bit of information. This guide deals with a small part of it.
+After you add the permission, the updated manifest should look similar to this:
+
+    <@snippet path="Rest/src/main/AndroidManifest.xml" prefix="complete"/>
+
+
+Create string resources
+-----------------------
+
+Add a text string for each UI widget. Text strings can be referenced from the application or from other resource files. This guide uses four text views and a menu item, and each of these UI elements needs a text description. Add `id_label`, `id_value`, `content_label`, `content_value` and `action_refresh` strings.
+
+    <@snippet path="Rest/src/main/res/values/strings.xml" prefix="complete"/>
+
+
+Create a layout
+---------------
+
+The layout file is where you define the visual structure for the user interface of your application. When you created the project, Android Studio added a layout fragment. As the name implies, a layout fragment represents a piece of the overall layout. In this case the layout fragment is used to display some text within the main activity. Modify the layout fragment to include four `TextView` widgets. The ids are used to reference these widgets from the code. Note the use of the string resources for the text of each widget.
+
+    <@snippet path="Rest/src/main/res/layout/fragment_main.xml" prefix="complete"/>
+    
+The layout includes some information about how to position and size the widgets. Android Studio will display the visual representation of the layout in the preview window:
+
+![Fragment layout preview](images/fragment-layout.png)
+
+
+Create a menu
+-------------
+
+The project includes a menu for the main activity. Modify the menu to have a "refresh" option. Note again the use of the string resource as the title of the menu item.
+
+    <@snippet path="Rest/src/main/res/menu/main.xml" prefix="complete"/>
+    
+Android Studio will display the visual representation of the menu in the preview window:
+
+![Fragment layout preview](images/menu-layout.png)
+
 
 Create a representation class
 -----------------------------
 
-To model this JSON data, you create a representation class that defines a few of these fields. The following example uses Jackson annotations. Jackson is a powerful JSON processor for Java that you can use within Spring.
+To model the JSON data received from the RESTful HTTP request, you create a representation class that defines the fields.
 
-    <@snippet path="src/main/java/org/hello/Page.java" prefix="complete"/>
+    <@snippet path="Rest/src/main/java/org/hello/rest/Greeting.java" prefix="complete"/>
 
-As you can see, this is a simple Java class with a handful of properties and matching getter methods. It's annotated with `@JsonIgnoreProperties` from the Jackson JSON processing library to indicate that any properties not bound in this type should be ignored.
+As you can see, this is a simple Java class with a handful of properties and matching getter methods.
 
 
-Invoke a REST service with the RestTemplate
----------------------------------------
+Add dependencies
+----------------
 
-Spring provides a template class called `RestTemplate`. `RestTemplate` makes interacting with most RESTful services a simple process. In the example below, you establish a few variables and then make a request of our simple REST service. As mentioned earlier, you use Jackson to marshal the JSON response data into our representation classes.
+To utilize Spring for Android's RestTemplate within an Android app, you need to add the required Maven dependencies to the Gradle build file. RestTemplate makes use of Jackson, which is a powerful JSON processor for Java.
 
-    <@snippet path="src/main/java/org/hello/HelloActivity.java" prefix="complete"/>
+    <@snippet path="Rest/build.gradle" prefix="complete"/>
 
-So far, you have only used the HTTP verb `GET` to make calls, but you could just as easily have used `POST`, `PUT`, and so on.
 
-## <@build_and_run_android/>
+Create an activity
+------------------
+
+The Model-View-Controller design pattern (MVC) is used extensively in Android applications. An `Activity` controls the view, which is represented by the layout you already created. When you created the project, a `MainActivity` was also created with a default implementation. Modify the `MainActivity` to make a RESTful HTTP request and update the view. Each modification is explained below.
+
+    <@snippet path="Rest/src/main/java/org/hello/rest/MainActivity.java" prefix="complete"/>
+
+First, add the `HttpRequestTask` private class. This class inherits from `AsyncTask` which is a facility provided by Android for performing potentially, long running activities off of the main UI thread. It is important to do this, because otherwise you can lock the UI, causing a user to believe the app has stopped responding or crashed.
+
+Spring provides a template class called `RestTemplate`. `RestTemplate` makes interacting with most RESTful services a simple process. Within the `doInBackground` method of the `HttpRequestTask` class, `RestTemplate` is used to make an HTTP request and marshal the JSON response to a `Greeting` object. When `doInBackground` returns, the `onPostExecute` method is called, where the text values of the `greetingIdText` and `greetingContentText` widgets are updated with the results of the HTTP request.
+
+Next, add the `onStart` method which calls the `execute` method on `HttpRequestTask`. The `onStart` method is part of the `Activity` lifecycle and is called when the activity starts. The result is that the HTTP request is performed when the app loads.
+
+Lastly, update the `onOptionsItemSelected` method to also execute the HTTP request when the "Refresh" menu item is selected. This allows you to make additional HTTP requests without closing and restarting the app.
 
 
 Summary
 -------
 
 Congratulations! You have developed a simple REST client using Spring for Android.
+
+<@u_rest/>
+[gs-rest-service]: /guides/gs-rest-service/
+<@u_json/>
+[Android Studio]: http://developer.android.com/sdk/installing/studio.html
+[Android Manifest]: http://developer.android.com/guide/topics/manifest/manifest-intro.html
